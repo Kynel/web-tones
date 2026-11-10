@@ -6,7 +6,7 @@
 
 ## 주요 기능
 
-- **NAM A2 캡처** — 공식 NAM 코어(WebAssembly)를 AudioWorklet에서 실행. 내장 앰프 캡처 7종 + 내 `.nam` 파일 불러오기. 한 체인에 여러 개(예: 페달 캡처 → 앰프 캡처)를 둘 수 있습니다.
+- **NAM A2 캡처** — 공식 NAM 코어(WebAssembly)를 AudioWorklet에서 실행. 내장 앰프 캡처 7종 + 내 `.nam` 파일 불러오기(A2뿐 아니라 기존 WaveNet/LSTM 모델도 로드됩니다). 한 체인에 여러 개(예: 페달 캡처 → 앰프 캡처)를 둘 수 있습니다.
 - **캐비닛 IR** — 내장 캐비닛 IR 4종 + 내 WAV IR 불러오기. IR 레벨은 자동 보정됩니다.
 - **이펙터 17종** — Noise Gate, Compressor, Clean Boost, Overdrive, Distortion, Fuzz, NAM Capture, Cabinet IR, Parametric EQ, Graphic EQ, Wah, Chorus, Flanger, Phaser, Tremolo, Delay, Reverb. ([이펙터 레퍼런스](docs/EFFECTS.md))
 - **시그널 체인 편집** — 추가/삭제, 드래그로 순서 변경, 개별 바이패스.
