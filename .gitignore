@@ -4,3 +4,4 @@ public/engine
 *.log
 .DS_Store
 scripts/out
+.env*.local

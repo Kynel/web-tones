@@ -28,6 +28,7 @@ src/
     assets.ts       내장 에셋 카탈로그 + 사용자 파일(IndexedDB)
     util.ts         dB 변환, 믹스, IR 게인 보정 등 순수 함수
     effects/        이펙터 구현 (파일당 한 계열) + 레지스트리(index.ts)
+  t3k/              TONE3000 연동: OAuth(PKCE), API 클라이언트 (docs/TONE3000.md)
   state/
     store.ts        Zustand 스토어, 엔진과의 연결, 세션 저장
     serialize.ts    톤 ⇄ 압축 JSON ⇄ 공유 링크
@@ -103,6 +104,7 @@ AudioContext는 첫 사용자 제스처(재생/입력 켜기)에서 만들어집
 | 작업 중인 톤, 입출력 게인, 선택한 DI 트랙 | `localStorage` `web-tones:session:v1` |
 | 내 프리셋 | `localStorage` `web-tones:presets:v1` |
 | 불러온 `.nam` / IR 파일 | IndexedDB `web-tones` / `assets` |
+| TONE3000 토큰 / 직접 입력한 키 | `sessionStorage` `web-tones:t3k-tokens` / `localStorage` `web-tones:t3k-key` |
 | 공유 링크 | URL 해시 `#tone=<base64url(JSON)>` |
 
 톤은 기본값과 다른 파라미터만 담는 압축 형식(`ToneData`)으로 직렬화됩니다. 역직렬화 시 알 수 없는 이펙터는 버리고 값은 범위로 클램프하므로, 조작된 공유 링크가 비정상 값을 주입할 수 없습니다.

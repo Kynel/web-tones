@@ -7,6 +7,7 @@
 ## 주요 기능
 
 - **NAM A2 캡처** — 공식 NAM 코어(WebAssembly)를 AudioWorklet에서 실행. 내장 앰프 캡처 7종 + 내 `.nam` 파일 불러오기(A2뿐 아니라 기존 WaveNet/LSTM 모델도 로드됩니다). 한 체인에 여러 개(예: 페달 캡처 → 앰프 캡처)를 둘 수 있습니다.
+- **TONE3000 연동** — 앱 안에서 TONE3000 카탈로그의 NAM 캡처·IR을 골라 바로 체인에 불러옵니다. ([설정 방법](docs/TONE3000.md))
 - **캐비닛 IR** — 내장 캐비닛 IR 4종 + 내 WAV IR 불러오기. IR 레벨은 자동 보정됩니다.
 - **이펙터 17종** — Noise Gate, Compressor, Clean Boost, Overdrive, Distortion, Fuzz, NAM Capture, Cabinet IR, Parametric EQ, Graphic EQ, Wah, Chorus, Flanger, Phaser, Tremolo, Delay, Reverb. ([이펙터 레퍼런스](docs/EFFECTS.md))
 - **시그널 체인 편집** — 추가/삭제, 드래그로 순서 변경, 개별 바이패스.
@@ -22,6 +23,8 @@ Node.js 20 이상이 필요합니다.
 npm install
 npm run dev
 ```
+
+TONE3000 연동을 쓰려면 `.env.example`을 `.env.local`로 복사하고 publishable key를 넣으세요(없어도 앱은 동작하며, 다이얼로그에서 직접 입력할 수도 있습니다).
 
 브라우저에서 표시된 주소를 열고 ▶ 를 누르면 오디오 엔진이 켜집니다(브라우저 정책상 첫 클릭 이후에만 소리를 낼 수 있습니다).
 
@@ -41,7 +44,7 @@ npm run dev
 2. 체인의 타일을 누르면 아래 편집기에 노브가 나타납니다.
    - 노브: 위아래 드래그 / 스크롤 / 방향키, `Shift` = 미세 조절, 더블클릭 = 기본값
    - 타일 우상단 LED = 바이패스, 타일 드래그 = 순서 변경
-3. **NAM Capture**와 **Cabinet IR**에서는 내장 목록 대신 내 파일(`.nam`, `.wav`)을 불러올 수 있습니다. 파일은 이 브라우저(IndexedDB)에만 저장되며 서버로 전송되지 않습니다.
+3. **NAM Capture**와 **Cabinet IR**에서는 내장 목록 대신 **TONE3000에서 찾기**로 카탈로그에서 고르거나, 내 파일(`.nam`, `.wav`)을 불러올 수 있습니다. 파일은 이 브라우저(IndexedDB)에만 저장되며 서버로 전송되지 않습니다.
 4. **내 기타 (라이브)** 탭에서 ● 를 누르고 마이크 권한을 허용하면 실시간 연주가 됩니다. 지연을 줄이려면 오디오 인터페이스와 헤드폰을 사용하세요.
 5. **저장**으로 내 프리셋을 만들고, **링크 공유**로 현재 톤이 담긴 URL을 복사합니다. (내 파일을 쓴 블록은 받는 쪽에 같은 파일이 없으므로 공유되지 않습니다.)
 
@@ -61,6 +64,7 @@ NAM은 딜레이·리버브·코러스처럼 시간에 따라 변하는 이펙�
 
 - [아키텍처](docs/ARCHITECTURE.md) — 오디오 그래프, 상태 흐름, 디렉터리 구조
 - [이펙터 레퍼런스 & 새 이펙터 추가하기](docs/EFFECTS.md)
+- [TONE3000 연동](docs/TONE3000.md) — 키 설정, OAuth 흐름, 이용 조건
 - [로드맵](docs/ROADMAP.md)
 
 ## 크레딧
