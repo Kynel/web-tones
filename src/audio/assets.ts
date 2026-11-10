@@ -1,0 +1,153 @@
+// Catalog of bundled captures / IRs / DI tracks, plus user-imported files
+// (kept in IndexedDB so a tone built on your own captures survives a reload).
+
+export interface AssetEntry {
+  /** 'builtin:<slug>' or 'user:<uuid>' */
+  id: string;
+  name: string;
+  kind: 'nam' | 'ir';
+  tag?: string;
+  url?: string;
+}
+
+const base = import.meta.env?.BASE_URL ?? './';
+
+const nam = (slug: string, name: string, tag: string): AssetEntry => ({
+  id: `builtin:${slug}`,
+  name,
+  kind: 'nam',
+  tag,
+  url: `${base}models/${slug}.nam`,
+});
+const ir = (slug: string, name: string, tag: string): AssetEntry => ({
+  id: `builtin:${slug}`,
+  name,
+  kind: 'ir',
+  tag,
+  url: `${base}irs/${slug}.wav`,
+});
+
+export const BUILTIN_MODELS: AssetEntry[] = [
+  nam('deluxe-a2', 'Fender Deluxe Reverb', 'Clean'),
+  nam('jc', 'Roland JC-120', 'Clean'),
+  nam('ac10', 'Vox AC10', 'Chime'),
+  nam('dumble', 'Dumble Overdrive Special', 'Smooth'),
+  nam('jcm', 'Marshall JCM800', 'Crunch'),
+  nam('5153', 'EVH 5153 (Boosted)', 'High Gain'),
+  nam('ampeg', 'Ampeg V-2', 'Bass'),
+];
+
+export const BUILTIN_CAB_IRS: AssetEntry[] = [
+  ir('celestion', 'Celestion G12 Vintage', 'Cab'),
+  ir('mesa', 'Mesa 4x12 Oversized', 'Cab'),
+  ir('eminence', 'Eminence Governor', 'Cab'),
+  ir('ampeg', 'Ampeg 8x10', 'Bass Cab'),
+];
+
+export const BUILTIN_REVERB_IRS: AssetEntry[] = [
+  ir('plate', 'EMT 140 Plate', 'Reverb'),
+  ir('spring', 'Fender Spring', 'Reverb'),
+];
+
+export interface DiTrack {
+  id: string;
+  name: string;
+  url: string;
+}
+const di = (slug: string, name: string): DiTrack => ({ id: slug, name, url: `${base}inputs/${slug}.flac` });
+export const DI_TRACKS: DiTrack[] = [
+  di('mayer', 'Mayer — 클린 블루스'),
+  di('pluck', 'Pluck — 클린 아르페지오'),
+  di('smooth', 'Smooth — 재즈/퓨전'),
+  di('brit', 'Brit — 클래식 록 리프'),
+  di('hammer-lead', 'Hammer Lead — 리드'),
+  di('metalcore', 'Metalcore — 하이게인 리프'),
+  di('downtown', 'Downtown — 베이스'),
+];
+
+// ---------------------------------------------------------------- user files
+
+interface StoredAsset {
+  id: string;
+  name: string;
+  kind: 'nam' | 'ir';
+  data: ArrayBuffer;
+}
+
+let dbPromise: Promise<IDBDatabase> | null = null;
+function db(): Promise<IDBDatabase> {
+  dbPromise ??= new Promise((resolve, reject) => {
+    const req = indexedDB.open('web-tones', 1);
+    req.onupgradeneeded = () => req.result.createObjectStore('assets', { keyPath: 'id' });
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+  return dbPromise;
+}
+function tx<T>(mode: IDBTransactionMode, fn: (s: IDBObjectStore) => IDBRequest<T>): Promise<T> {
+  return db().then(
+    (d) =>
+      new Promise<T>((resolve, reject) => {
+        const req = fn(d.transaction('assets', mode).objectStore('assets'));
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      }),
+  );
+}
+
+export async function listUserAssets(): Promise<AssetEntry[]> {
+  try {
+    const all = await tx<StoredAsset[]>('readonly', (s) => s.getAll());
+    return all.map(({ id, name, kind }) => ({ id, name, kind, tag: '내 파일' }));
+  } catch {
+    return [];
+  }
+}
+
+export async function importUserAsset(file: File, kind: 'nam' | 'ir'): Promise<AssetEntry> {
+  const data = await file.arrayBuffer();
+  if (kind === 'nam') {
+    // Fail early on files that are not NAM JSON at all.
+    const parsed = JSON.parse(new TextDecoder().decode(data));
+    if (!parsed || typeof parsed !== 'object' || !parsed.architecture) throw new Error('NAM 모델 파일이 아닙니다');
+  }
+  const id = `user:${crypto.randomUUID()}`;
+  const name = file.name.replace(/\.(nam|wav|flac|aiff?)$/i, '');
+  await tx('readwrite', (s) => s.put({ id, name, kind, data } satisfies StoredAsset));
+  return { id, name, kind, tag: '내 파일' };
+}
+
+export async function deleteUserAsset(id: string): Promise<void> {
+  await tx('readwrite', (s) => s.delete(id));
+}
+
+const builtinById = new Map(
+  [...BUILTIN_MODELS, ...BUILTIN_CAB_IRS, ...BUILTIN_REVERB_IRS].map((a) => [`${a.kind}:${a.id}`, a]),
+);
+
+/** Fetch the raw bytes behind an asset reference. */
+export async function loadAssetBytes(kind: 'nam' | 'ir', id: string): Promise<ArrayBuffer> {
+  if (id.startsWith('user:')) {
+    const rec = await tx<StoredAsset | undefined>('readonly', (s) => s.get(id));
+    if (!rec) throw new Error('가져온 파일을 찾을 수 없습니다 (이 브라우저에 저장된 파일이 아님)');
+    return rec.data;
+  }
+  const entry = builtinById.get(`${kind}:${id}`);
+  if (!entry?.url) throw new Error(`알 수 없는 에셋: ${id}`);
+  const res = await fetch(entry.url);
+  if (!res.ok) throw new Error(`에셋 로드 실패 (${res.status})`);
+  return res.arrayBuffer();
+}
+
+const irCache = new WeakMap<BaseAudioContext, Map<string, Promise<AudioBuffer>>>();
+export function loadIrBuffer(ctx: BaseAudioContext, id: string): Promise<AudioBuffer> {
+  let m = irCache.get(ctx);
+  if (!m) irCache.set(ctx, (m = new Map()));
+  let p = m.get(id);
+  if (!p) {
+    p = loadAssetBytes('ir', id).then((b) => ctx.decodeAudioData(b));
+    p.catch(() => m.delete(id));
+    m.set(id, p);
+  }
+  return p;
+}
