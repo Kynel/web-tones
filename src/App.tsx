@@ -4,11 +4,14 @@ import { AddMenu } from './ui/AddMenu';
 import { Chain } from './ui/Chain';
 import { Editor } from './ui/Editor';
 import { Header } from './ui/Header';
+import { T3kDialog, type T3kPending } from './ui/T3kDialog';
+import { resumeRedirect } from './t3k/client';
 import { Transport } from './ui/Transport';
 
 export function App() {
   const [adding, setAdding] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const t3k = useStore((s) => s.t3k);
   const timer = useRef<ReturnType<typeof setTimeout>>();
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -20,6 +23,16 @@ export function App() {
     void useStore.getState().refreshUserAssets();
     // A shared link has been applied to the store; keep the URL clean afterwards.
     if (location.hash.startsWith('#tone=')) history.replaceState(null, '', location.pathname + location.search);
+    // Back from TONE3000 via full-page redirect (popup was blocked): reopen the browser on the chosen tone.
+    void resumeRedirect<T3kPending>().then((r) => {
+      if (!r || r.result.status === 'canceled' || r.result.status === 'redirecting') return;
+      const s = useStore.getState();
+      const kind = r.pending?.kind ?? 'nam';
+      const block = s.blocks[r.pending?.blockIndex ?? -1];
+      const blockId = block && block.type === (kind === 'nam' ? 'nam' : 'cab') ? block.id : null;
+      if (blockId) s.select(blockId);
+      s.openT3k(kind, blockId, r.result.status === 'ok' ? { toneId: r.result.toneId } : { error: `TONE3000 연결 실패: ${r.result.error}` });
+    });
   }, []);
 
   // Space toggles playback unless a control has focus.
@@ -48,6 +61,7 @@ export function App() {
         데모 캡처/IR/DI 트랙은 <a href="https://www.tone3000.com" target="_blank" rel="noreferrer">TONE3000</a> 제공
       </footer>
       {adding && <AddMenu onClose={() => setAdding(false)} />}
+      {t3k && <T3kDialog key={`${t3k.kind}:${t3k.blockId}:${t3k.toneId ?? ''}`} />}
       <div className="toast" role="status" data-show={toast ? true : undefined}>
         {toast}
       </div>

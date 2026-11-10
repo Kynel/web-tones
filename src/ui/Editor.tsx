@@ -12,6 +12,7 @@ function AssetPicker({ block, def }: { block: Block; def: AssetParam }) {
   const setParam = useStore((s) => s.setParam);
   const importAsset = useStore((s) => s.importAsset);
   const removeAsset = useStore((s) => s.removeAsset);
+  const openT3k = useStore((s) => s.openT3k);
   const userAssets = useStore((s) => s.userAssets);
   const status = useStore((s) => s.status[block.id]);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +28,11 @@ function AssetPicker({ block, def }: { block: Block; def: AssetParam }) {
         <span className="asset-name">{a.name}</span>
         <span className="asset-tag">{a.tag}</span>
       </button>
+      {a.href && (
+        <a className="icon-btn" href={a.href} target="_blank" rel="noreferrer" aria-label={`${a.name} — TONE3000에서 보기`} title="TONE3000에서 보기">
+          ↗
+        </a>
+      )}
       {a.id.startsWith('user:') && (
         <button
           className="icon-btn"
@@ -46,9 +52,14 @@ function AssetPicker({ block, def }: { block: Block; def: AssetParam }) {
     <div className="asset-picker">
       <div className="asset-head">
         <span>{isNam ? '캡처 선택' : 'IR 선택'}</span>
-        <button className="btn small" onClick={() => file.current?.click()}>
-          {isNam ? '.nam 파일 불러오기' : 'IR(.wav) 불러오기'}
-        </button>
+        <span className="asset-head-actions">
+          <button className="btn small" onClick={() => openT3k(def.assetKind, block.id)}>
+            TONE3000에서 찾기
+          </button>
+          <button className="btn small" onClick={() => file.current?.click()}>
+            {isNam ? '.nam 파일' : 'IR(.wav) 파일'}
+          </button>
+        </span>
         <input
           ref={file}
           type="file"

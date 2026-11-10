@@ -8,6 +8,8 @@ export interface AssetEntry {
   kind: 'nam' | 'ir';
   tag?: string;
   url?: string;
+  /** Page to credit / link back to (TONE3000 tones). */
+  href?: string;
 }
 
 const base = import.meta.env?.BASE_URL ?? './';
@@ -72,6 +74,8 @@ interface StoredAsset {
   name: string;
   kind: 'nam' | 'ir';
   data: ArrayBuffer;
+  tag?: string;
+  href?: string;
 }
 
 let dbPromise: Promise<IDBDatabase> | null = null;
@@ -98,24 +102,37 @@ function tx<T>(mode: IDBTransactionMode, fn: (s: IDBObjectStore) => IDBRequest<T
 export async function listUserAssets(): Promise<AssetEntry[]> {
   try {
     const all = await tx<StoredAsset[]>('readonly', (s) => s.getAll());
-    return all.map(({ id, name, kind }) => ({ id, name, kind, tag: '내 파일' }));
+    return all.map(({ id, name, kind, tag, href }) => ({ id, name, kind, tag: tag ?? '내 파일', href }));
   } catch {
     return [];
   }
 }
 
-export async function importUserAsset(file: File, kind: 'nam' | 'ir'): Promise<AssetEntry> {
-  const data = await file.arrayBuffer();
+/** Store bytes as a user asset. `meta.key` makes the import idempotent (same TONE3000 model -> same entry). */
+export async function importAssetBytes(
+  name: string,
+  kind: 'nam' | 'ir',
+  data: ArrayBuffer,
+  meta: { tag?: string; href?: string; key?: string } = {},
+): Promise<AssetEntry> {
   if (kind === 'nam') {
     // Fail early on files that are not NAM JSON at all.
-    const parsed = JSON.parse(new TextDecoder().decode(data));
-    if (!parsed || typeof parsed !== 'object' || !parsed.architecture) throw new Error('NAM 모델 파일이 아닙니다');
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(new TextDecoder().decode(data));
+    } catch {
+      parsed = null;
+    }
+    if (!parsed || typeof parsed !== 'object' || !('architecture' in parsed)) throw new Error('NAM 모델 파일이 아닙니다');
   }
-  const id = `user:${crypto.randomUUID()}`;
-  const name = file.name.replace(/\.(nam|wav|flac|aiff?)$/i, '');
-  await tx('readwrite', (s) => s.put({ id, name, kind, data } satisfies StoredAsset));
-  return { id, name, kind, tag: '내 파일' };
+  const id = `user:${meta.key ?? crypto.randomUUID()}`;
+  const tag = meta.tag ?? '내 파일';
+  await tx('readwrite', (s) => s.put({ id, name, kind, data, tag, href: meta.href } satisfies StoredAsset));
+  return { id, name, kind, tag, href: meta.href };
 }
+
+export const importUserAsset = (file: File, kind: 'nam' | 'ir') =>
+  file.arrayBuffer().then((data) => importAssetBytes(file.name.replace(/\.(nam|wav|flac|aiff?)$/i, ''), kind, data));
 
 export async function deleteUserAsset(id: string): Promise<void> {
   await tx('readwrite', (s) => s.delete(id));

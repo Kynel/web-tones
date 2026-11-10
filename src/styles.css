@@ -266,6 +266,43 @@ select {
 .add-item:hover { border-color: var(--cat); }
 .add-item span { font-size: 12px; color: var(--muted); }
 
+/* -------------------------------------------------------------- tone3000 */
+.asset-head-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.asset a.icon-btn { text-decoration: none; }
+.t3k { width: min(620px, calc(100vw - 24px)); }
+.t3k-brand { color: var(--text); text-decoration: none; font-weight: 800; letter-spacing: 0.04em; }
+.t3k-body { padding: 16px; display: grid; gap: 14px; }
+.t3k-setup { display: grid; gap: 8px; }
+.t3k-setup label { font-size: 12px; color: var(--muted); }
+.t3k-setup input { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.t3k-uri { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; overflow-wrap: anywhere; user-select: all; }
+.t3k-browse { display: grid; gap: 8px; justify-items: start; }
+.t3k-list, .t3k-models { display: grid; gap: 4px; max-height: 44vh; overflow: auto; }
+.t3k-tone {
+  display: flex; align-items: center; gap: 10px; text-align: left; background: var(--panel-2);
+  border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px;
+}
+.t3k-tone:hover, .t3k-model:hover:not(:disabled) { border-color: var(--accent); }
+.t3k-tone img, .t3k-avatar { width: 32px; height: 32px; border-radius: 50%; flex: none; background: var(--panel-3); object-fit: cover; }
+.t3k-tone-main { display: grid; min-width: 0; }
+.t3k-tone-main strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.t3k-tone-main span { font-size: 12px; color: var(--muted); }
+.t3k-detail { display: grid; gap: 12px; justify-items: start; }
+.t3k-tone-head { display: flex; gap: 12px; align-items: flex-start; }
+.t3k-tone-head > img { width: 84px; height: 84px; border-radius: 10px; object-fit: cover; flex: none; }
+.t3k-tone-head h3 { font-size: 17px; }
+.t3k-creator { display: flex; align-items: center; gap: 6px; margin: 2px 0; }
+.t3k-creator img { border-radius: 50%; }
+.t3k-models { width: 100%; }
+.t3k-model { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; width: 100%; }
+.t3k-status { font-size: 12px; color: var(--muted); }
+.t3k-status[data-error] { color: var(--danger); }
+.t3k-foot {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 10px 16px; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--muted);
+}
+.t3k-foot-actions { display: flex; gap: 6px; }
+
 .app-footer { margin-top: 18px; font-size: 12px; color: var(--muted); text-align: center; }
 .toast {
   position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0; pointer-events: none;

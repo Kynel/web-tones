@@ -57,6 +57,11 @@ interface State {
   setInputGain(db: number): void;
   setMaster(db: number): void;
 
+  /** TONE3000 browser: which block asked, and (after the picker) which tone was chosen. */
+  t3k: { kind: 'nam' | 'ir'; blockId: string | null; toneId?: string | null; error?: string } | null;
+  openT3k(kind: 'nam' | 'ir', blockId: string | null, extra?: { toneId?: string | null; error?: string }): void;
+  closeT3k(): void;
+
   refreshUserAssets(): Promise<void>;
   importAsset(file: File, kind: 'nam' | 'ir'): Promise<AssetEntry>;
   removeAsset(id: string): Promise<void>;
@@ -269,6 +274,10 @@ export const useStore = create<State>((set, get) => {
       engine.setMaster(db);
     },
 
+    t3k: null,
+    openT3k: (kind, blockId, extra) => set({ t3k: { kind, blockId, ...extra } }),
+    closeT3k: () => set({ t3k: null }),
+
     async refreshUserAssets() {
       set({ userAssets: await listUserAssets() });
     },
@@ -289,20 +298,24 @@ engine.sync(useStore.getState().blocks);
 
 // Persist the working tone so a reload picks up where you left off.
 let saveTimer: ReturnType<typeof setTimeout> | undefined;
+/** Write the session immediately (also used right before leaving the page). */
+export function saveSessionNow() {
+  clearTimeout(saveTimer);
+  const s = useStore.getState();
+  const session: Session = {
+    tone: toToneData(s.toneName, s.blocks),
+    trackId: s.trackId,
+    inputGain: s.inputGain,
+    master: s.master,
+  };
+  try {
+    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  } catch { /* storage full or blocked */ }
+}
 useStore.subscribe((s, prev) => {
   if (s.blocks === prev.blocks && s.trackId === prev.trackId && s.inputGain === prev.inputGain && s.master === prev.master && s.toneName === prev.toneName) return;
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    const session: Session = {
-      tone: toToneData(s.toneName, s.blocks),
-      trackId: s.trackId,
-      inputGain: s.inputGain,
-      master: s.master,
-    };
-    try {
-      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-    } catch { /* storage full or blocked */ }
-  }, 300);
+  saveTimer = setTimeout(saveSessionNow, 300);
 });
 
 export { base };
