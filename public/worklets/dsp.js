@@ -181,8 +181,9 @@ class WahProcessor extends AudioWorkletProcessor {
         const v2 = this.ic2[ch] + a2 * this.ic1[ch] + a3 * v3;
         this.ic1[ch] = 2 * v1 - this.ic1[ch];
         this.ic2[ch] = 2 * v2 - this.ic2[ch];
-        // band-pass with a little low-pass body, like an inductor wah
-        const wet = v1 * 1.6 + v2 * 0.35;
+        // Band-pass with a little low-pass body, like an inductor wah. The
+        // band-pass peaks at Q, so scale by sqrt(k) to keep sharp settings from blasting.
+        const wet = v1 * 2.2 * Math.sqrt(k) + v2 * 0.35;
         output[ch][i] = x * (1 - mix) + wet * mix;
       }
     }

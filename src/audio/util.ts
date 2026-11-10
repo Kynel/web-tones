@@ -39,3 +39,32 @@ export function stopAll(oscs: (AudioScheduledSourceNode | undefined)[]) {
     }
   }
 }
+
+/**
+ * Gain that brings an impulse response to unity in-band level: the mean power
+ * of its frequency response over 100 Hz - 5 kHz becomes 0 dB. Cabinet IRs come
+ * at arbitrary levels; with this a cab neither boosts nor cuts the amp in front
+ * of it and swapping cabs does not jump in volume (same convention as the NAM
+ * plugin / TONE3000 player).
+ */
+export function irUnityGain(data: Float32Array, sampleRate: number): number {
+  const n = Math.min(data.length, sampleRate); // the first second is plenty for a cab
+  const POINTS = 48;
+  let power = 0;
+  for (let k = 0; k < POINTS; k++) {
+    const f = 100 * Math.pow(50, k / (POINTS - 1));
+    const w = (2 * Math.PI * f) / sampleRate;
+    // Goertzel: |H(f)|^2 without a full FFT
+    const c = 2 * Math.cos(w);
+    let s1 = 0;
+    let s2 = 0;
+    for (let i = 0; i < n; i++) {
+      const s0 = data[i] + c * s1 - s2;
+      s2 = s1;
+      s1 = s0;
+    }
+    power += s1 * s1 + s2 * s2 - c * s1 * s2;
+  }
+  const mean = power / POINTS;
+  return mean > 1e-12 ? 1 / Math.sqrt(mean) : 1;
+}

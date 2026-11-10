@@ -1,7 +1,7 @@
 import type { NamNode } from 'neural-amp-modeler-wasm/engine';
 import { loadAssetBytes, loadIrBuffer } from '../assets';
 import type { EffectDef, ParamDef } from '../types';
-import { dbToGain, disconnectAll, mixGains, num, ramp, str } from '../util';
+import { dbToGain, disconnectAll, irUnityGain, mixGains, num, ramp, str } from '../util';
 import { instance, knob, pct, select } from './helpers';
 
 const namParams: ParamDef[] = [
@@ -107,6 +107,7 @@ export const cab: EffectDef = {
     const { ctx } = ec;
     const input = ctx.createGain();
     const conv = ctx.createConvolver();
+    conv.normalize = false; // we gain-stage the IR ourselves, see irUnityGain
     const hp = ctx.createBiquadFilter();
     hp.type = 'highpass';
     hp.Q.value = 0.707;
@@ -120,6 +121,7 @@ export const cab: EffectDef = {
     input.connect(dry).connect(out);
 
     let mix = 1;
+    let irGain = 1;
     let loaded = false;
     let token = 0;
     let disposed = false;
@@ -127,7 +129,7 @@ export const cab: EffectDef = {
       // Until an IR is in place the convolver is silent: pass the dry signal.
       const [d, w] = loaded ? mixGains(mix) : [1, 0];
       ramp(dry.gain, d, ctx);
-      ramp(wet.gain, w, ctx);
+      ramp(wet.gain, w * irGain, ctx);
     };
 
     async function load(id: string) {
@@ -136,6 +138,7 @@ export const cab: EffectDef = {
       try {
         const buf = await loadIrBuffer(ctx, id);
         if (mine !== token || disposed) return;
+        irGain = irUnityGain(buf.getChannelData(0), buf.sampleRate);
         conv.buffer = buf;
         loaded = true;
         applyMix();
