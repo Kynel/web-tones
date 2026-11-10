@@ -54,10 +54,14 @@ export function Transport() {
             <label className="field">
               <span>연주 샘플</span>
               <select value={s.trackId} onChange={(e) => s.setTrack(e.target.value)}>
-                {DI_TRACKS.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name}
-                  </option>
+                {(['guitar', 'bass'] as const).map((kind) => (
+                  <optgroup key={kind} label={kind === 'guitar' ? '기타' : '베이스'}>
+                    {DI_TRACKS.filter((t) => t.kind === kind).map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
             </label>

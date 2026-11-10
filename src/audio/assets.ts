@@ -54,17 +54,46 @@ export const BUILTIN_REVERB_IRS: AssetEntry[] = [
 export interface DiTrack {
   id: string;
   name: string;
+  kind: 'guitar' | 'bass';
   url: string;
 }
-const di = (slug: string, name: string): DiTrack => ({ id: slug, name, url: `${base}inputs/${slug}.flac` });
+const di = (slug: string, name: string, kind: DiTrack['kind']): DiTrack => ({ id: slug, name, kind, url: `${base}inputs/${slug}.flac` });
+/** Dry (DI) recordings to audition tones with: every input shipped with tone-3000/neural-amp-modeler-wasm. */
 export const DI_TRACKS: DiTrack[] = [
-  di('mayer', 'Mayer — 클린 블루스'),
-  di('pluck', 'Pluck — 클린 아르페지오'),
-  di('smooth', 'Smooth — 재즈/퓨전'),
-  di('brit', 'Brit — 클래식 록 리프'),
-  di('hammer-lead', 'Hammer Lead — 리드'),
-  di('metalcore', 'Metalcore — 하이게인 리프'),
-  di('downtown', 'Downtown — 베이스'),
+  di('brit', "Brit", 'guitar'),
+  di('celestial', "Celestial", 'guitar'),
+  di('cream', "Cream", 'guitar'),
+  di('decapitated', "Decapitated", 'guitar'),
+  di('fast-thrash', "Fast Thrash", 'guitar'),
+  di('fear', "Fear", 'guitar'),
+  di('groove-thrash', "Groove Thrash", 'guitar'),
+  di('hammer-lead', "Hammer Lead", 'guitar'),
+  di('harmonics', "Harmonics", 'guitar'),
+  di('honky', "Honky", 'guitar'),
+  di('hotrod', "Hotrod", 'guitar'),
+  di('jazz-hop', "Jazz Hop", 'guitar'),
+  di('jazz-trot', "Jazz Trot", 'guitar'),
+  di('john', "John", 'guitar'),
+  di('lunar', "Lunar", 'guitar'),
+  di('mayer', "Mayer", 'guitar'),
+  di('metalcore', "Metalcore", 'guitar'),
+  di('pluck', "Pluck", 'guitar'),
+  di('pop-punk', "Pop Punk", 'guitar'),
+  di('power', "Power", 'guitar'),
+  di('power-thrash', "Power Thrash", 'guitar'),
+  di('progression', "Progression", 'guitar'),
+  di('raid', "Raid", 'guitar'),
+  di('rotary', "Rotary", 'guitar'),
+  di('slide-lead', "Slide Lead", 'guitar'),
+  di('smooth', "Smooth", 'guitar'),
+  di('stroke', "Stroke", 'guitar'),
+  di('tomb', "Tomb", 'guitar'),
+  di('downtown', "Downtown", 'bass'),
+  di('drivin', "Drivin'", 'bass'),
+  di('frogger', "Frogger", 'bass'),
+  di('garden', "Garden", 'bass'),
+  di('rollin', "Rollin'", 'bass'),
+  di('smokin', "Smokin'", 'bass'),
 ];
 
 // ---------------------------------------------------------------- user files

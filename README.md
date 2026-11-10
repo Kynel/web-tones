@@ -11,7 +11,7 @@
 - **캐비닛 IR** — 내장 캐비닛 IR 4종 + 내 WAV IR 불러오기. IR 레벨은 자동 보정됩니다.
 - **이펙터 17종** — Noise Gate, Compressor, Clean Boost, Overdrive, Distortion, Fuzz, NAM Capture, Cabinet IR, Parametric EQ, Graphic EQ, Wah, Chorus, Flanger, Phaser, Tremolo, Delay, Reverb. ([이펙터 레퍼런스](docs/EFFECTS.md))
 - **시그널 체인 편집** — 추가/삭제, 드래그로 순서 변경, 개별 바이패스.
-- **입력 소스** — 내장 DI 트랙 7종(기타/베이스) 루프 재생 또는 오디오 인터페이스 라이브 입력.
+- **입력 소스** — 내장 DI 트랙 34종(기타 28, 베이스 6) 루프 재생 또는 오디오 인터페이스 라이브 입력.
 - **프리셋** — 팩토리 프리셋 9종, 내 프리셋 저장(브라우저 저장소), **링크로 톤 공유**.
 - **유틸리티** — 입출력 레벨 미터, 튜너, EQ 응답 곡선, 컴프 게인 리덕션 미터, 출력 세이프티 리미터.
 
@@ -70,4 +70,4 @@ NAM은 딜레이·리버브·코러스처럼 시간에 따라 변하는 이펙�
 ## 크레딧
 
 - [Neural Amp Modeler](https://www.neuralampmodeler.com/) — Steven Atkinson
-- [`neural-amp-modeler-wasm`](https://github.com/tone-3000/neural-amp-modeler-wasm) (MIT, TONE3000) — WASM 엔진과, `public/models`·`public/irs`·`public/inputs`의 데모 캡처/IR/DI 트랙의 출처입니다. DI 트랙은 용량을 위해 16-bit FLAC으로 변환했습니다.
+- [`neural-amp-modeler-wasm`](https://github.com/tone-3000/neural-amp-modeler-wasm) (MIT, TONE3000) — WASM 엔진과, `public/models`·`public/irs`·`public/inputs`의 데모 캡처/IR/DI 트랙의 출처입니다. DI 트랙 34개 전부를 가져왔고, 용량을 위해 16-bit FLAC으로 변환했습니다. 해당 저장소 README에 명시된 DI 기여자: [@pippress](https://www.tone3000.com/pipppriss) (Fast Thrash, Groove Thrash, Power Thrash), [@2dor](https://www.tone3000.com/2dor) (Decapitated).
